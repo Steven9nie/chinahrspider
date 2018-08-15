@@ -8,31 +8,50 @@ from ChinaHR.items import ChinahrItem
 
 class ChinahrSpider(CrawlSpider):
     name = 'chinahr'
-    allowed_domains = ['chinahr.com']
+    allowed_domains = ['chinahr.com', 'st02.chrstatic.com']
     start_urls = ['http://www.chinahr.com/sou/?orderField=relate&city=20,219&industrys=0&page=1']
     page_lx = LinkExtractor(allow=('page=(\d+)'))
     rules = (Rule(page_lx, callback='get_parse', follow=True),)
-    'http://st02.chrstatic.com/themes/pcchinahr/js/industry.js'
-    def start_requests(self):
 
+    def start_requests(self):
+        """爬虫前的预加载"""
         url = 'http://st02.chrstatic.com/themes/pcchinahr/js/citys.js?v=20170829'
         yield scrapy.Request(url, callback=self.get_city)
 
     def get_city(self, response):
-        res_str = response.text
+        """获取url城市id"""
+        js_str = response.text
         replace_list = [(key, '%r' % key) for key in ['id', 'mark', 'name', 'en', 'l2', 'l3']]
         for p in replace_list:
-            res_str = res_str.replace(p[0], p[1])
-
+            js_str = js_str.replace(p[0], p[1])
+            
         pat = 'exports.base=(\[.*\])'
-        city_list = eval(re.findall(pat, res_str)[0])
+        city_list = eval(re.findall(pat, js_str)[0])
 
+        url = 'http://st02.chrstatic.com/themes/pcchinahr/js/industry.js'
+
+        yield scrapy.Request(url, callback=self.get_industy, meta={'city_list': city_list})
+
+    def get_industy(self, response):
+        """获取url行业id"""
+        js_str = response.text
+        pat = 'industry = (\[.*\])'
+        industy_list = eval(re.findall(pat, js_str)[0])
+
+        print(industy_list)
+        city_list = response.meta['city_list']
         for province in city_list:
             pid = province['id']
             for city in province['l2']:
                 cid = city['id']
-                url = f'http://www.chinahr.com/sou/?orderField=relate&city={pid},{cid}&industrys=0&page=1'
-                yield scrapy.Request(url=url)
+                for industy in industy_list:
+                    fir_id = industy['id']
+                    sec_id_list = industy['l2']
+                    for sec_id in sec_id_list:
+
+                        url = f'http://www.chinahr.com/sou/?orderField=relate&city={pid},{cid}' \
+                              f'&industrys={fir_id},{sec_id}&page=1'
+                        yield scrapy.Request(url=url)
 
     def get_parse(self, response):
 
