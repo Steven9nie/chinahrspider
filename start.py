@@ -1,6 +1,6 @@
-"""
-scrapy框架程序启动文件
-"""
+# -*- coding: utf-8 -*-
+# @Desc: scrapy框架程序启动文件
+
 import scrapy.cmdline
 
 
