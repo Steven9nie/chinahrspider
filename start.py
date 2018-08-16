@@ -1,3 +1,6 @@
+"""
+scrapy框架程序启动文件
+"""
 import scrapy.cmdline
 
 

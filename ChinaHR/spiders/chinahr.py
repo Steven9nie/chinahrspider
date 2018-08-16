@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+"""
+爬虫主要逻辑
+"""
+
+
 import re
 import scrapy
 from scrapy.spiders import CrawlSpider, Rule
@@ -33,7 +38,7 @@ class ChinahrSpider(CrawlSpider):
         yield scrapy.Request(url, callback=self.get_industy, meta={'city_list': city_list})
 
     def get_industy(self, response):
-        """获取url行业id"""
+        """获取url行业id,组装待爬职位信息的url"""
         js_str = response.text
         pat = 'industry = (\[.*\])'
         industy_list = eval(re.findall(pat, js_str)[0])
@@ -54,7 +59,7 @@ class ChinahrSpider(CrawlSpider):
                         yield scrapy.Request(url=url)
 
     def get_parse(self, response):
-
+        """获取职位列表"""
         job_list = response.xpath('//div[@class="resultList"]//div[@class="jobList"]')
         for job in job_list:
             url = job.xpath('./ul/li[1]/span[@class="e1"]/a/@href').extract()[0]
@@ -62,7 +67,7 @@ class ChinahrSpider(CrawlSpider):
             yield scrapy.Request(url, callback=self.get_info)
 
     def get_info(self, response):
-
+        """获取职位详细信息"""
         job_name = response.xpath('//div[@class="base_info"]/div/h1//text()').extract()[1]
 
         job_require = response.xpath('//div[@class="job_require"]')

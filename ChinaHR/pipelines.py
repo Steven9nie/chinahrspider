@@ -10,6 +10,7 @@ import pymysql
 
 
 class ChinahrPipeline(object):
+    """清洗后的数据入库"""
     def __init__(self):
         # 连接数据库
         self.conn = None
