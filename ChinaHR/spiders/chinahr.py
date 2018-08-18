@@ -53,7 +53,7 @@ class ChinahrSpider(CrawlSpider):
 
                         url = f'http://www.chinahr.com/sou/?orderField=relate&city={pid},{cid}' \
                               f'&industrys={fir_id},{sec_id}&page=1'
-                        yield scrapy.Request(url=url)
+                        return scrapy.Request(url=url)
 
     def get_parse(self, response):
         """获取职位列表"""
@@ -75,7 +75,7 @@ class ChinahrSpider(CrawlSpider):
         job_exp = job_require.xpath('./span[5]/text()').extract()[0]
 
         welfare = response.xpath('//div[@class="job_fit_tags"]/ul//text()').extract()
-        welfare = [welfare for welfare in welfare if welfare.strip()]
+        welfare = str([welfare for welfare in welfare if welfare.strip()])
 
         company_name = response.xpath('//div[@class="job-company jrpadding"]/h4//text()').extract()[0]
         company = response.xpath('//div[@class="job-company jrpadding"]/table/tbody//tr[not(@class)]')
@@ -92,7 +92,7 @@ class ChinahrSpider(CrawlSpider):
         except:
             company_property = None
         ability_list = response.xpath('//div[@class="job_intro_info"]//text()').extract()
-        ability = ''.join([t.strip() for t in ability_list])
+        ability = ''.join([t.strip() for t in ability_list]).replace("'", "").replace('"', '')
 
         item = ChinahrItem()
         item['jobName'] = job_name  # 职位名

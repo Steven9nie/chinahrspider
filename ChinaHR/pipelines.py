@@ -33,9 +33,10 @@ class ChinahrPipeline(object):
         sql = "INSERT INTO `%s`(%s) VALUES (%s)" % (
             'jobs',
             ','.join(fields),
-            ','.join(['%r'] * len(values))
+            ','.join(["%s"] * len(values))
         )
-        # print(sql, values)
+        print(sql, values)
+
         self.cur.execute(sql, values)
         self.conn.commit()
         return item
